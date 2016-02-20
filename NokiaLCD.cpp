@@ -95,8 +95,8 @@ void NokiaLCD::character(char character) {
   write(LCD_DATA, 0x00); 
 } 
   
-void NokiaLCD::print(char *characters) { 
-  while (*characters) { 
-    character(*characters++); 
-  } 
-} 
+// void NokiaLCD::print(const char *characters) { 
+//   while (const char *characters) { 
+//     character(char *characters++); 
+//   } 
+// } 
