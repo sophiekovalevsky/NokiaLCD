@@ -28,6 +28,7 @@
 // Include right library based on Arduino IDE version
 #if defined(ARDUINO) && ARDUINO >= 100
  	#include "Arduino.h"
+	#include "Print.h"
  #else
 	#include "WProgram.h"
 #endif
@@ -47,20 +48,25 @@
 
 #define uint uint8_t
 
-class NokiaLCD {
+class NokiaLCD: public Print { 
 	public:
 	    
 		NokiaLCD(uint SCK, uint MOSI, uint DC, uint RST, uint CS);
 
 		void init();
-		void write(byte data_or_command, byte data);
+		void writeData(byte data_or_command, byte data);
 
 		void clear(void);
 		void setCursor(int x, int y);
 		void bitmap(unsigned char bmp[]);
 		void sBitmap();
 		void character(char character);
-		void print(char *characters);
+		//void print(const char *characters);
+		#if ARDUINO >= 100
+		  virtual size_t write(uint8_t);
+		#else
+		  virtual void   write(uint8_t);
+		#endif
 
 	private: 
 		uint _SCK;

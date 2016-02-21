@@ -27,13 +27,13 @@ void NokiaLCD::init() {
   digitalWrite(_RST, LOW); // Reset LCD 
   digitalWrite(_RST, HIGH);  
     
-  write(LCD_COMMAND, LCDEXTENDED);  // Tell LCD that extended commands follow 
-  write(LCD_COMMAND, LCDCONTRAST);  // Set LCD Vop (Contrast): Try 0xB1(good @ 3.3V) or 0xBF if your display is too dark 
-  write(LCD_COMMAND, LCDTEMPC);       // Set Temp coefficent 
-  write(LCD_COMMAND, LCDMODE);      // LCD bias mode 1:48: Try 0x13 or 0x14 
+  writeData(LCD_COMMAND, LCDEXTENDED);  // Tell LCD that extended commands follow 
+  writeData(LCD_COMMAND, LCDCONTRAST);  // Set LCD Vop (Contrast): Try 0xB1(good @ 3.3V) or 0xBF if your display is too dark 
+  writeData(LCD_COMMAND, LCDTEMPC);       // Set Temp coefficent 
+  writeData(LCD_COMMAND, LCDMODE);      // LCD bias mode 1:48: Try 0x13 or 0x14 
   
-  write(LCD_COMMAND, LCDBCMODE);    // We must send 0x20 before modifying the display control mode 
-  write(LCD_COMMAND, LCDCONTROL);   // Set display control, normal mode. 0x0D for inverse 
+  writeData(LCD_COMMAND, LCDBCMODE);    // We must send 0x20 before modifying the display control mode 
+  writeData(LCD_COMMAND, LCDCONTROL);   // Set display control, normal mode. 0x0D for inverse 
 } 
   
 /* 
@@ -41,7 +41,7 @@ void NokiaLCD::init() {
   as a data or as an instruction. 
 */
   
-void NokiaLCD::write(byte data_or_command, byte data) { 
+void NokiaLCD::writeData(byte data_or_command, byte data) { 
   digitalWrite(_DC, data_or_command);  
   digitalWrite(_CS, LOW); 
   shiftOut(_MOSI, _SCK, MSBFIRST, data); 
@@ -53,7 +53,7 @@ void NokiaLCD::write(byte data_or_command, byte data) {
   
 void NokiaLCD::clear(void) { 
   for (int index = 0 ; index < (LCD_X * LCD_Y / 8) ; index++) 
-   write(LCD_DATA, 0x00); 
+   writeData(LCD_DATA, 0x00); 
    setCursor(0, 0);                 // After we clear the display, return to the home position 
 } 
   
@@ -64,13 +64,13 @@ void NokiaLCD::clear(void) {
 */
   
 void NokiaLCD::setCursor(int x, int y) { 
-  write(0, 0x80 | x); // Column. 
-  write(0, 0x40 | y); // Row. 
+  writeData(0, 0x80 | x); // Column. 
+  writeData(0, 0x40 | y); // Row. 
 } 
   
 void NokiaLCD::bitmap(unsigned char bmp[]) { 
   for (int index = 0 ; index < (LCD_X * LCD_Y / 8) ; index++) { 
-    write(LCD_DATA, bmp[index]); 
+    writeData(LCD_DATA, bmp[index]); 
   } 
 } 
   
@@ -88,13 +88,27 @@ void NokiaLCD::sBitmap() {
 } 
   
 void NokiaLCD::character(char character) { 
-  write(LCD_DATA, 0x00); 
+  writeData(LCD_DATA, 0x00); 
   for (int index = 0 ; index < 5 ; index++) { 
-    write(LCD_DATA, ASCII[character - 0x20][index]); 
+    writeData(LCD_DATA, ASCII[character - 0x20][index]); 
   } 
-  write(LCD_DATA, 0x00); 
+  writeData(LCD_DATA, 0x00); 
 } 
   
+
+#if ARDUINO >= 100
+size_t NokiaLCD::write(uint8_t c) {
+#else
+void NokiaLCD::write(uint8_t c) {
+#endif
+
+#if ARDUINO >= 100
+  return 1;
+#endif
+
+}
+
+// Repair this method
 // void NokiaLCD::print(const char *characters) { 
 //   while (const char *characters) { 
 //     character(char *characters++); 
