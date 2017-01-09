@@ -1,6 +1,6 @@
 #include "NokiaLCD.h" 
 #include "ASCII.h" 
-  
+  s
 NokiaLCD::NokiaLCD(uint SCK, uint MOSI, uint DC, uint RST, uint CS) { 
   // Configure control pins defining as OUTPUTS. 
   pinMode(CS, OUTPUT); 
