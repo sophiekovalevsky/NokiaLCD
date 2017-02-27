@@ -1,6 +1,6 @@
 #include "NokiaLCD.h" 
-#include "ASCII.h" 
-  s
+#include "ASCII.h"
+
 NokiaLCD::NokiaLCD(uint SCK, uint MOSI, uint DC, uint RST, uint CS) { 
   // Configure control pins defining as OUTPUTS. 
   pinMode(CS, OUTPUT); 
@@ -19,28 +19,24 @@ NokiaLCD::NokiaLCD(uint SCK, uint MOSI, uint DC, uint RST, uint CS) {
   
   
 /* 
-  We initialize the LCD. 
-  Set differents parameters need it. 
+  Init LCD with the properly commands instruction set 
 */
   
 void NokiaLCD::init() { 
-  digitalWrite(_RST, LOW); // Reset LCD 
-  digitalWrite(_RST, HIGH);  
+  digitalWrite(_RST, LOW); // Send a reset signal to properly init the LCD
+  digitalWrite(_RST, HIGH); 
     
-  writeData(LCD_COMMAND, LCDEXTENDED);  // Tell LCD that extended commands follow 
-  writeData(LCD_COMMAND, LCDCONTRAST);  // Set LCD Vop (Contrast): Try 0xB1(good @ 3.3V) or 0xBF if your display is too dark 
-  writeData(LCD_COMMAND, LCDTEMPC);       // Set Temp coefficent 
-  writeData(LCD_COMMAND, LCDMODE);      // LCD bias mode 1:48: Try 0x13 or 0x14 
+  writeData(LCD_COMMAND, LCDEXTENDED);  // Use extended instruction set
+  writeData(LCD_COMMAND, LCDCONTRAST);  // Set Vop
+  writeData(LCD_COMMAND, LCDTEMPC);     // Set Temp coefficent 
+  writeData(LCD_COMMAND, LCDMODE);      // Set bias system
   
-  writeData(LCD_COMMAND, LCDBCMODE);    // We must send 0x20 before modifying the display control mode 
-  writeData(LCD_COMMAND, LCDCONTROL);   // Set display control, normal mode. 0x0D for inverse 
+  writeData(LCD_COMMAND, LCDBCMODE);    // Change from extendend instruction set to basic one 
+  writeData(LCD_COMMAND, LCDCONTROL);   // Set display control
 } 
-  
-/* 
-  In this part we're telling to the LCD if they should take the information 
-  as a data or as an instruction. 
-*/
-  
+
+// Send a byte through the bus
+
 void NokiaLCD::writeData(byte data_or_command, byte data) { 
   digitalWrite(_DC, data_or_command);  
   digitalWrite(_CS, LOW); 
@@ -54,63 +50,51 @@ void NokiaLCD::writeData(byte data_or_command, byte data) {
 void NokiaLCD::clear(void) { 
   for (int index = 0 ; index < (LCD_X * LCD_Y / 8) ; index++) 
    writeData(LCD_DATA, 0x00); 
-   setCursor(0, 0);                 // After we clear the display, return to the home position 
+   setCursor(0, 0);                     // After clear the display, return to home position 
 } 
   
 /* 
   Set the cursor to the corresponding position. 
-  0x80 = Maximun colum position number. 
+  0x80 = Maximun column position number. 
   0x40 = Maximun row position number. 
 */
   
 void NokiaLCD::setCursor(int x, int y) { 
-  writeData(0, 0x80 | x); // Column. 
-  writeData(0, 0x40 | y); // Row. 
+  writeData(LCD_COMMAND, 0x80 | x); // Column. 
+  writeData(LCD_COMMAND, 0x40 | y); // Row. 
 } 
-  
-void NokiaLCD::bitmap(unsigned char bmp[]) { 
-  for (int index = 0 ; index < (LCD_X * LCD_Y / 8) ; index++) { 
-    writeData(LCD_DATA, bmp[index]); 
-  } 
-} 
-  
-void NokiaLCD::sBitmap() { 
-  if(Serial.available()) { 
-     for(int i=0;i<(84*48/8);i++) { 
-       while(!Serial.available()) { 
-         // Do nothing if we dont receive data 
-       } 
-       char c = Serial.read(); 
-       img[i] = c; 
-     } 
-     bitmap(img); 
-  } 
-} 
-  
+
 void NokiaLCD::character(char character) { 
-  writeData(LCD_DATA, 0x00); 
+  writeData(LCD_DATA, 0x00);
   for (int index = 0 ; index < 5 ; index++) { 
     writeData(LCD_DATA, ASCII[character - 0x20][index]); 
   } 
   writeData(LCD_DATA, 0x00); 
 } 
-  
 
-#if ARDUINO >= 100
-size_t NokiaLCD::write(uint8_t c) {
-#else
-void NokiaLCD::write(uint8_t c) {
-#endif
+void NokiaLCD::print(char *characters) { 
+  while(*characters) { 
+    character(*characters++); 
+  } 
+} 
 
-#if ARDUINO >= 100
-  return 1;
-#endif
-
-}
-
-// Repair this method
-// void NokiaLCD::print(const char *characters) { 
-//   while (const char *characters) { 
-//     character(char *characters++); 
+// void NokiaLCD::bitmap(unsigned char bmp[]) { 
+//   for (int index = 0 ; index < (LCD_X * LCD_Y / 8) ; index++) { 
+//     writeData(LCD_DATA, bmp[index]); 
 //   } 
 // } 
+  
+// void NokiaLCD::sBitmap() { 
+//   if (Serial.available()) { 
+//       for (int index = 0 ; index < (LCD_X * LCD_Y / 8) ; index++) { 
+//         while(!Serial.available()) { 
+//           // Do nothing if no data is received
+//         } 
+//         char c = Serial.read(); 
+//         img[i] = c; 
+//       } 
+//       bitmap(img); 
+//   } 
+// } 
+
+

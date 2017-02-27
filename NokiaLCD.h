@@ -18,20 +18,17 @@
 //   http://www.clase911.com																									    //
 //							
 //	 19-02-2016 - sophiekovalevsky@fedoraproject.org																				//
-//   http://www.panamahitek.com																									    //																										//
+//   http://www.panamahitek.com
+//
+//	 19-02-2016 - sophiekovalevsky@fedoraproject.org																				//
+//   http://www.anelectronicgirl.com																										    //																										//
 //																																	//
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #ifndef NokiaLCD_h
 #define NokiaLCD_h
 
-// Include right library based on Arduino IDE version
-#if defined(ARDUINO) && ARDUINO >= 100
- 	#include "Arduino.h"
-	#include "Print.h"
- #else
-	#include "WProgram.h"
-#endif
+#include "Arduino.h"
 
 #define LCD_COMMAND 0
 #define LCD_DATA 1
@@ -48,7 +45,7 @@
 
 #define uint uint8_t
 
-class NokiaLCD: public Print { 
+class NokiaLCD { 
 	public:
 	    
 		NokiaLCD(uint SCK, uint MOSI, uint DC, uint RST, uint CS);
@@ -61,12 +58,7 @@ class NokiaLCD: public Print {
 		void bitmap(unsigned char bmp[]);
 		void sBitmap();
 		void character(char character);
-		//void print(const char *characters);
-		#if ARDUINO >= 100
-		  virtual size_t write(uint8_t);
-		#else
-		  virtual void   write(uint8_t);
-		#endif
+		void print(char *characters);
 
 	private: 
 		uint _SCK;
@@ -74,6 +66,6 @@ class NokiaLCD: public Print {
 		uint _DC;
 		uint _RST;
 		uint _CS;
-		unsigned char img[(84*48/8)];
+		unsigned char img[(LCD_X*LCD_Y/8)];
 };
 #endif
